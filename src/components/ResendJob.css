@@ -5,9 +5,33 @@
   overflow-y: auto;
 }
 
+/* ===== Smooth Fade & Slide Animations ===== */
+@keyframes rj-fade-slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rj-fade-in {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
 /* Page Header */
 .rj-page-header {
   margin-bottom: 24px;
+  animation: rj-fade-slide-up 0.45s ease-out both;
 }
 
 .rj-page-title {
@@ -29,6 +53,8 @@
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
   margin-bottom: 24px;
+  animation: rj-fade-slide-up 0.45s ease-out both;
+  animation-delay: 0.05s;
 }
 
 .rj-mode-card {
@@ -91,7 +117,9 @@
   border-radius: 12px;
   padding: 24px;
   margin-bottom: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  animation: rj-fade-slide-up 0.45s ease-out both;
+  animation-delay: 0.1s;
 }
 
 .rj-input-group {
@@ -184,14 +212,16 @@
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
   border-radius: 50%;
   animation: rj-spin 0.6s linear infinite;
 }
 
 @keyframes rj-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Results */
@@ -201,7 +231,8 @@
   padding: 20px;
   margin-bottom: 20px;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  animation: rj-fade-slide-up 0.4s ease-out both;
 }
 
 .rj-result-success {
@@ -263,7 +294,9 @@
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  animation: rj-fade-slide-up 0.45s ease-out both;
+  animation-delay: 0.15s;
 }
 
 .rj-api-info h4 {
@@ -321,9 +354,11 @@
   .rj-container {
     padding: 14px;
   }
+
   .rj-mode-cards {
     grid-template-columns: 1fr;
   }
+
   .rj-input-row {
     flex-direction: column;
   }

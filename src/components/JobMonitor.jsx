@@ -516,7 +516,7 @@ function JobMonitor() {
       {/* ===== Error ===== */}
       {error && (
         <div className="jm-error-box">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
           <strong>Error:</strong> {error}
         </div>
       )}
@@ -562,8 +562,8 @@ function JobMonitor() {
                 </tr>
               </thead>
               <tbody>
-                {data.jobs.map((job) => (
-                  <tr key={job.job_id} className={`jm-job-row ${expandedJob === job.job_id ? 'expanded' : ''}`}>
+                {data.jobs.map((job, index) => (
+                  <tr key={job.job_id} className={`jm-job-row ${expandedJob === job.job_id ? 'expanded' : ''}`} style={{ animationDelay: `${0.05 * index}s` }}>
                     <td>
                       <button type="button" className="jm-expand-btn" onClick={() => setExpandedJob(expandedJob === job.job_id ? null : job.job_id)}>
                         {expandedJob === job.job_id ? '▼' : '▶'}
@@ -582,7 +582,7 @@ function JobMonitor() {
                     <td className="jm-td-actions">
                       {job.status !== 'COMPLETED' && (
                         <button type="button" className="jm-action-btn" onClick={() => quickResend('job', getJobNo(job))} title="Resend this job" disabled={!getJobNo(job)}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
                           Resend
                         </button>
                       )}
@@ -632,7 +632,7 @@ function JobMonitor() {
                           <td className="jm-td-actions">
                             {parentStatus !== 'COMPLETED' && (
                               <button type="button" className="jm-action-btn" onClick={() => quickResend('item_code', item.item_code)} title="Resend by this item code">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
                                 Resend
                               </button>
                             )}
@@ -658,7 +658,7 @@ function JobMonitor() {
       {/* No Results */}
       {data && data.jobs.length === 0 && !loading && (
         <div className="jm-empty">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="13 2 13 9 20 9" /></svg>
           <p>No jobs found matching the current filters.</p>
         </div>
       )}
@@ -705,7 +705,7 @@ function JobMonitor() {
                 {resendLoading ? (
                   <><span className="jm-spinner-small"></span> Sending...</>
                 ) : (
-                  <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg> Resend Job</>
+                  <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg> Resend Job</>
                 )}
               </button>
             </div>
@@ -717,7 +717,7 @@ function JobMonitor() {
         {resendError && (
           <div className="jm-resend-result jm-resend-error">
             <div className="jm-resend-result-header">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
               <span className="jm-resend-result-title">Request Failed</span>
             </div>
             <pre className="jm-resend-result-body">{resendError}</pre>
@@ -728,7 +728,7 @@ function JobMonitor() {
         {resendResult && (
           <div className="jm-resend-result jm-resend-success">
             <div className="jm-resend-result-header">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
               <span className="jm-resend-result-title">Request Successful</span>
               <span className="jm-resend-result-status">HTTP {resendResult.status}</span>
             </div>
