@@ -24,6 +24,7 @@ const STATUS_NE_OPTIONS = [
 const LIMIT_PRESETS = [10, 50, 100]
 
 function JobMonitor() {
+  const [reloadKey, setReloadKey] = useState(0)
   const [filterMode, setFilterMode] = useState('day')
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedMonth, setSelectedMonth] = useState('')
@@ -79,19 +80,14 @@ function JobMonitor() {
 
   useEffect(() => {
     fetchJobs()
-  }, [fetchJobs])
+  }, [fetchJobs, reloadKey])
 
   const handleSearch = (e) => {
     e.preventDefault()
     setOffset(0)
-    setData(null)
+    setExpandedJob(null)
+    setReloadKey((key) => key + 1)
   }
-
-  useEffect(() => {
-    if (data === null) {
-      fetchJobs()
-    }
-  }, [data, offset, fetchJobs])
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0
   const currentPage = data ? Math.floor(data.offset / data.limit) + 1 : 1
@@ -99,13 +95,11 @@ function JobMonitor() {
   const goToPage = (page) => {
     const newOffset = (page - 1) * data.limit
     setOffset(newOffset)
-    setData(null)
   }
 
   const handleLimitChange = (e) => {
     setLimit(Number(e.target.value))
     setOffset(0)
-    setData(null)
   }
 
   const handleItemLimitChange = (e) => {
@@ -517,7 +511,7 @@ function JobMonitor() {
             <span className="jm-chip">Not: {statusNe}<button type="button" className="jm-chip-close" onClick={() => setStatusNe('')}>&times;</button></span>
           )}
           {(selectedDate || selectedMonth || status || statusNe) && (
-            <button type="button" className="jm-btn jm-btn-ghost" onClick={() => { setSelectedDate(''); setSelectedMonth(''); setStatus(''); setStatusNe(''); setOffset(0); setData(null) }}>Clear All</button>
+            <button type="button" className="jm-btn jm-btn-ghost" onClick={() => { setSelectedDate(''); setSelectedMonth(''); setStatus(''); setStatusNe(''); setOffset(0); setExpandedJob(null); setReloadKey((key) => key + 1) }}>Clear All</button>
           )}
         </div>
       </form>
@@ -539,16 +533,22 @@ function JobMonitor() {
         </div>
       )}
 
-      {loading && (
+      {loading && !data && (
         <div className="jm-loading">
           <div className="jm-spinner"></div>
           <p>Loading jobs...</p>
         </div>
       )}
 
-      {data && data.jobs.length > 0 && !loading && (
+      {data && data.jobs.length > 0 && (
         <>
           <div className="jm-table-wrapper">
+            {loading && (
+              <div className="jm-table-loading-overlay">
+                <div className="jm-spinner jm-spinner-overlay"></div>
+                <span>Loading jobs...</span>
+              </div>
+            )}
             <table className="jm-table">
               <thead>
                 <tr>
@@ -577,7 +577,7 @@ function JobMonitor() {
 
                   return (
                     <Fragment key={job.job_id}>
-                      <tr className={`jm-job-row ${isExpanded ? 'expanded' : ''}`} style={{ animationDelay: `${0.05 * index}s` }}>
+                      <tr className={`jm-job-row ${isExpanded ? 'expanded' : ''}`}>
                         <td>
                           <button type="button" className="jm-expand-btn" onClick={() => toggleExpandedJob(job.job_id)}>
                             {isExpanded ? '▼' : '▶'}
