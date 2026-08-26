@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { Fragment, useState, useEffect, useCallback } from 'react'
 import Swal from 'sweetalert2'
 import './JobMonitor.css'
 
@@ -21,16 +21,15 @@ const STATUS_NE_OPTIONS = [
   { value: 'FAILED', label: 'Not FAILED' },
 ]
 
-const LIMIT_PRESETS = [10, 20, 50, 100]
+const LIMIT_PRESETS = [10, 50, 100]
 
 function JobMonitor() {
-  // ===== Job Monitor State =====
   const [filterMode, setFilterMode] = useState('day')
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedMonth, setSelectedMonth] = useState('')
   const [status, setStatus] = useState('')
   const [statusNe, setStatusNe] = useState('')
-  const [limit, setLimit] = useState(20)
+  const [limit, setLimit] = useState(10)
   const [offset, setOffset] = useState(0)
 
   const [data, setData] = useState(null)
@@ -38,14 +37,12 @@ function JobMonitor() {
   const [error, setError] = useState(null)
   const [expandedJob, setExpandedJob] = useState(null)
 
-  // ===== Resend Job State =====
   const [resendMode, setResendMode] = useState('item_code')
   const [resendValue, setResendValue] = useState('')
   const [resendLoading, setResendLoading] = useState(false)
   const [resendResult, setResendResult] = useState(null)
   const [resendError, setResendError] = useState(null)
 
-  // ===== Job Monitor Logic =====
   const fetchJobs = useCallback(async () => {
     setLoading(true)
     setError(null)
@@ -103,6 +100,12 @@ function JobMonitor() {
     setData(null)
   }
 
+  const handleLimitChange = (e) => {
+    setLimit(Number(e.target.value))
+    setOffset(0)
+    setData(null)
+  }
+
   const statusClass = (s) => {
     switch (s) {
       case 'COMPLETED': return 'jm-badge jm-badge-success'
@@ -130,7 +133,7 @@ function JobMonitor() {
     if (!dt) return '-'
     const parts = dt.split(' ')
     const datePart = parts[0]
-    const timePart = parts.length > 1 ? ' ' + parts.slice(1).join(' ') : ''
+    const timePart = parts.length > 1 ? ` ${parts.slice(1).join(' ')}` : ''
     const dateSegments = datePart.split('-')
     if (dateSegments.length === 3) {
       return `${dateSegments[2]}/${dateSegments[1]}/${dateSegments[0]}${timePart}`
@@ -194,7 +197,6 @@ function JobMonitor() {
     })
   }
 
-  // ===== Resend Job Logic =====
   const getResendEndpoint = () => {
     switch (resendMode) {
       case 'item_code':
@@ -230,9 +232,8 @@ function JobMonitor() {
     e.preventDefault()
     if (!resendValue.trim()) return
 
-    // Show loading
     Swal.fire({
-      title: '<span style="font-size:16px">⏳ Step 2/2: Processing Resend...</span>',
+      title: '<span style="font-size:16px">Step 2/2: Processing Resend...</span>',
       html: `
         <div style="text-align:left;line-height:1.8;font-size:13px">
           <p><strong>Endpoint:</strong></p>
@@ -275,9 +276,8 @@ function JobMonitor() {
 
       setResendResult({ status: res.status, data: responseData })
 
-      // Success popup
       Swal.fire({
-        title: '<span style="font-size:16px">✅ Resend Successful!</span>',
+        title: '<span style="font-size:16px">Resend Successful!</span>',
         html: `
           <div style="text-align:left;line-height:1.8;font-size:13px">
             <p><strong>HTTP Status:</strong> <span style="color:#22c55e">${res.status}</span></p>
@@ -289,22 +289,19 @@ function JobMonitor() {
         confirmButtonText: 'OK',
         confirmButtonColor: '#22c55e',
       }).then(() => {
-        // Clear resend inputs
         setResendValue('')
         setResendResult(null)
         setResendError(null)
       })
 
-      // Auto-refresh job table
       setData(null)
     } catch (err) {
       const errMsg = err.message
 
       setResendError(errMsg)
 
-      // Error popup
       Swal.fire({
-        title: '<span style="font-size:16px">❌ Resend Failed!</span>',
+        title: '<span style="font-size:16px">Resend Failed!</span>',
         html: `
           <div style="text-align:left;line-height:1.8;font-size:13px">
             <p><strong>Error:</strong></p>
@@ -320,7 +317,6 @@ function JobMonitor() {
     }
   }
 
-  // Quick-fill resend from job row - guided SweetAlert2 flow
   const quickResend = (mode, value) => {
     setResendMode(mode)
     setResendValue(String(value))
@@ -330,13 +326,13 @@ function JobMonitor() {
     const modeLabel = mode === 'job' ? 'Job No' : mode === 'request_id' ? 'Request ID' : 'Item Code'
 
     Swal.fire({
-      title: '<span style="font-size:18px">📋 Step 1/2: Resend Job</span>',
+      title: '<span style="font-size:18px">Step 1/2: Resend Job</span>',
       html: `
         <div style="text-align:left;line-height:1.8;font-size:14px">
           <p><strong>Selected Mode:</strong> ${modeLabel}</p>
           <p><strong>Value:</strong> <code style="background:#f1f5f9;padding:2px 8px;border-radius:4px">${String(value)}</code></p>
           <hr style="margin:12px 0;border-color:#e2e8f0">
-          <p>🔽 The value has been filled in the <strong>Resend Job</strong> section below.</p>
+          <p>The value has been filled in the <strong>Resend Job</strong> section below.</p>
           <p>Click <strong>"Resend Job"</strong> button to continue.</p>
         </div>
       `,
@@ -403,7 +399,6 @@ function JobMonitor() {
 
   return (
     <div className="jm-container">
-      {/* ===== Page Header ===== */}
       <div className="jm-page-header">
         <div>
           <h2 className="jm-page-title">Job Monitor</h2>
@@ -425,7 +420,6 @@ function JobMonitor() {
         </div>
       </div>
 
-      {/* ===== Filter Panel ===== */}
       <form className="jm-filter-panel" onSubmit={handleSearch}>
         <div className="jm-filter-row">
           <div className="jm-filter-group">
@@ -484,7 +478,7 @@ function JobMonitor() {
 
           <div className="jm-filter-group">
             <label className="jm-filter-label">Limit</label>
-            <select className="jm-filter-input" value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
+            <select className="jm-filter-input" value={limit} onChange={handleLimitChange}>
               {LIMIT_PRESETS.map((n) => (<option key={n} value={n}>{n}</option>))}
             </select>
           </div>
@@ -513,7 +507,6 @@ function JobMonitor() {
         </div>
       </form>
 
-      {/* ===== Error ===== */}
       {error && (
         <div className="jm-error-box">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
@@ -521,7 +514,6 @@ function JobMonitor() {
         </div>
       )}
 
-      {/* ===== Info Bar ===== */}
       {data && (
         <div className="jm-info-bar">
           <span>Total Jobs: <strong>{data.total}</strong></span>
@@ -532,7 +524,6 @@ function JobMonitor() {
         </div>
       )}
 
-      {/* ===== Loading ===== */}
       {loading && (
         <div className="jm-loading">
           <div className="jm-spinner"></div>
@@ -540,7 +531,6 @@ function JobMonitor() {
         </div>
       )}
 
-      {/* ===== Data Table ===== */}
       {data && data.jobs.length > 0 && !loading && (
         <>
           <div className="jm-table-wrapper">
@@ -562,91 +552,99 @@ function JobMonitor() {
                 </tr>
               </thead>
               <tbody>
-                {data.jobs.map((job, index) => (
-                  <tr key={job.job_id} className={`jm-job-row ${expandedJob === job.job_id ? 'expanded' : ''}`} style={{ animationDelay: `${0.05 * index}s` }}>
-                    <td>
-                      <button type="button" className="jm-expand-btn" onClick={() => setExpandedJob(expandedJob === job.job_id ? null : job.job_id)}>
-                        {expandedJob === job.job_id ? '▼' : '▶'}
-                      </button>
-                    </td>
-                    <td className="jm-td-id">{getJobNo(job) || '-'}</td>
-                    <td className="jm-td-mono" title={job.request_id}>{job.request_id?.substring(0, 8)}...</td>
-                    <td>{job.integration_profile}</td>
-                    <td>{job.requested_by}</td>
-                    <td>{job.source_system}</td>
-                    <td><span className={statusClass(job.status)}>{job.status}</span></td>
-                    <td className="jm-td-nowrap">{formatDateTime(job.requested_at)}</td>
-                    <td className="jm-td-nowrap">{formatDateTime(job.created_at)}</td>
-                    <td className="jm-td-nowrap">{formatDateTime(job.updated_at)}</td>
-                    <td className="jm-td-error" title={job.error_message}>{job.error_message || '-'}</td>
-                    <td className="jm-td-actions">
-                      {job.status !== 'COMPLETED' && (
-                        <button type="button" className="jm-action-btn" onClick={() => quickResend('job', getJobNo(job))} title="Resend this job" disabled={!getJobNo(job)}>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
-                          Resend
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                {data.jobs.map((job, index) => {
+                  const isExpanded = expandedJob === job.job_id
+                  const items = Array.isArray(job.items) ? job.items : []
 
-            {/* Expanded Items */}
-            {expandedJob && data.jobs.find(j => j.job_id === expandedJob)?.items?.length > 0 && (
-              <div className="jm-items-panel">
-                <div className="jm-items-header">
-                  <h4>Items for Job #{getJobNo(data.jobs.find(j => j.job_id === expandedJob)) || '-'} <span className="jm-items-count">({data.jobs.find(j => j.job_id === expandedJob).items.length} items)</span></h4>
-                  <button className="jm-btn jm-btn-ghost" onClick={() => setExpandedJob(null)}>Close</button>
-                </div>
-                <table className="jm-items-table">
-                  <thead>
-                    <tr>
-                      <th>Item ID</th>
-                      <th>Line #</th>
-                      <th>Item Code</th>
-                      <th>Quantity</th>
-                      <th>Warehouse</th>
-                      <th>Status</th>
-                      <th>Transfer No</th>
-                      <th>Record Key</th>
-                      <th>Created At</th>
-                      <th className="jm-th-actions">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(() => {
-                      const parentJob = data.jobs.find(j => j.job_id === expandedJob)
-                      const parentStatus = parentJob ? parentJob.status : ''
-                      return parentJob.items.map((item) => (
-                        <tr key={item.item_id}>
-                          <td className="jm-td-id">{item.item_id}</td>
-                          <td>{item.line_num}</td>
-                          <td className="jm-td-mono">{item.item_code}</td>
-                          <td>{item.quantity}</td>
-                          <td>{item.warehouse_code}</td>
-                          <td><span className={statusClass(parentStatus)}>{parentStatus}</span></td>
-                          <td>{item.transfer_no}</td>
-                          <td>{item.record_key}</td>
-                          <td className="jm-td-nowrap">{formatDateTime(item.created_at)}</td>
-                          <td className="jm-td-actions">
-                            {parentStatus !== 'COMPLETED' && (
-                              <button type="button" className="jm-action-btn" onClick={() => quickResend('item_code', item.item_code)} title="Resend by this item code">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
-                                Resend
-                              </button>
-                            )}
+                  return (
+                    <Fragment key={job.job_id}>
+                      <tr className={`jm-job-row ${isExpanded ? 'expanded' : ''}`} style={{ animationDelay: `${0.05 * index}s` }}>
+                        <td>
+                          <button type="button" className="jm-expand-btn" onClick={() => setExpandedJob(isExpanded ? null : job.job_id)}>
+                            {isExpanded ? '▼' : '▶'}
+                          </button>
+                        </td>
+                        <td className="jm-td-id">{getJobNo(job) || '-'}</td>
+                        <td className="jm-td-mono" title={job.request_id}>{job.request_id?.substring(0, 8)}...</td>
+                        <td>{job.integration_profile}</td>
+                        <td>{job.requested_by}</td>
+                        <td>{job.source_system}</td>
+                        <td><span className={statusClass(job.status)}>{job.status}</span></td>
+                        <td className="jm-td-nowrap">{formatDateTime(job.requested_at)}</td>
+                        <td className="jm-td-nowrap">{formatDateTime(job.created_at)}</td>
+                        <td className="jm-td-nowrap">{formatDateTime(job.updated_at)}</td>
+                        <td className="jm-td-error" title={job.error_message}>{job.error_message || '-'}</td>
+                        <td className="jm-td-actions">
+                          {job.status !== 'COMPLETED' && (
+                            <button type="button" className="jm-action-btn" onClick={() => quickResend('job', getJobNo(job))} title="Resend this job" disabled={!getJobNo(job)}>
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
+                              Resend
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                      {isExpanded && (
+                        <tr className="jm-job-detail-row">
+                          <td colSpan={12} className="jm-job-detail-cell">
+                            <div className="jm-items-panel">
+                              <div className="jm-items-header">
+                                <h4>Items for Job #{getJobNo(job) || '-'} <span className="jm-items-count">({items.length} items)</span></h4>
+                                <button type="button" className="jm-btn jm-btn-ghost" onClick={() => setExpandedJob(null)}>Close</button>
+                              </div>
+                              {items.length > 0 ? (
+                                <table className="jm-items-table">
+                                  <thead>
+                                    <tr>
+                                      <th>Item ID</th>
+                                      <th>Line #</th>
+                                      <th>Item Code</th>
+                                      <th>Quantity</th>
+                                      <th>Warehouse</th>
+                                      <th>Status</th>
+                                      <th>Transfer No</th>
+                                      <th>Record Key</th>
+                                      <th>Created At</th>
+                                      <th className="jm-th-actions">Actions</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {items.map((item) => (
+                                      <tr key={item.item_id}>
+                                        <td className="jm-td-id">{item.item_id}</td>
+                                        <td>{item.line_num}</td>
+                                        <td className="jm-td-mono">{item.item_code}</td>
+                                        <td>{item.quantity}</td>
+                                        <td>{item.warehouse_code}</td>
+                                        <td><span className={statusClass(job.status)}>{job.status}</span></td>
+                                        <td>{item.transfer_no}</td>
+                                        <td>{item.record_key}</td>
+                                        <td className="jm-td-nowrap">{formatDateTime(item.created_at)}</td>
+                                        <td className="jm-td-actions">
+                                          {job.status !== 'COMPLETED' && (
+                                            <button type="button" className="jm-action-btn" onClick={() => quickResend('item_code', item.item_code)} title="Resend by this item code">
+                                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
+                                              Resend
+                                            </button>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              ) : (
+                                <div className="jm-items-empty">No items found for this job.</div>
+                              )}
+                            </div>
                           </td>
                         </tr>
-                      ))
-                    })()}
-                  </tbody>
-                </table>
-              </div>
-            )}
+                      )}
+                    </Fragment>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
 
-          {/* Pagination */}
           <div className="jm-pagination">
             <button type="button" disabled={currentPage <= 1} onClick={() => goToPage(currentPage - 1)}>&laquo; Previous</button>
             <span className="jm-page-info">Page {currentPage} of {totalPages}</span>
@@ -655,7 +653,6 @@ function JobMonitor() {
         </>
       )}
 
-      {/* No Results */}
       {data && data.jobs.length === 0 && !loading && (
         <div className="jm-empty">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="13 2 13 9 20 9" /></svg>
@@ -663,7 +660,6 @@ function JobMonitor() {
         </div>
       )}
 
-      {/* ===== Resend Job Section ===== */}
       <div id="resend-section" className="jm-section-divider">
         <div className="jm-section-header">
           <div>
@@ -672,7 +668,6 @@ function JobMonitor() {
           </div>
         </div>
 
-        {/* Mode Cards */}
         <div className="jm-resend-cards">
           {resendModeOptions.map((opt) => (
             <button
@@ -688,7 +683,6 @@ function JobMonitor() {
           ))}
         </div>
 
-        {/* Resend Form */}
         <form className="jm-resend-form" onSubmit={handleResendSubmit}>
           <div className="jm-resend-input-group">
             <label className="jm-resend-label">{getResendLabel()}</label>
@@ -713,7 +707,6 @@ function JobMonitor() {
           </div>
         </form>
 
-        {/* Resend Error */}
         {resendError && (
           <div className="jm-resend-result jm-resend-error">
             <div className="jm-resend-result-header">
@@ -724,7 +717,6 @@ function JobMonitor() {
           </div>
         )}
 
-        {/* Resend Success */}
         {resendResult && (
           <div className="jm-resend-result jm-resend-success">
             <div className="jm-resend-result-header">
@@ -736,7 +728,6 @@ function JobMonitor() {
           </div>
         )}
 
-        {/* API Reference */}
         <div className="jm-resend-api-info">
           <h4>Available Endpoints</h4>
           <div className="jm-resend-api-list">

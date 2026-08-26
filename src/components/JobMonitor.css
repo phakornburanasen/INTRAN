@@ -378,6 +378,19 @@
   background: #eff6ff;
 }
 
+.jm-job-detail-row {
+  background: #fafbff;
+}
+
+.jm-job-detail-row:hover {
+  background: #fafbff;
+}
+
+.jm-job-detail-cell {
+  padding: 0 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
 .jm-td-id {
   font-weight: 600;
   color: #3b82f6;
@@ -428,7 +441,7 @@
 
 /* Items Panel */
 .jm-items-panel {
-  border-top: 2px solid #e2e8f0;
+  border-top: 1px solid #dbeafe;
   padding: 16px 20px;
   background: #fafbff;
   animation: jm-slide-down 0.4s ease-out both;
@@ -485,6 +498,15 @@
 
 .jm-items-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+.jm-items-empty {
+  padding: 16px 18px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #64748b;
+  font-size: 13px;
 }
 
 /* Badges */
