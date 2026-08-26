@@ -36,6 +36,8 @@ function JobMonitor() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [expandedJob, setExpandedJob] = useState(null)
+  const [itemLimit, setItemLimit] = useState(10)
+  const [itemPage, setItemPage] = useState(1)
 
   const [resendMode, setResendMode] = useState('item_code')
   const [resendValue, setResendValue] = useState('')
@@ -104,6 +106,19 @@ function JobMonitor() {
     setLimit(Number(e.target.value))
     setOffset(0)
     setData(null)
+  }
+
+  const handleItemLimitChange = (e) => {
+    setItemLimit(Number(e.target.value))
+    setItemPage(1)
+  }
+
+  const toggleExpandedJob = (jobId) => {
+    setExpandedJob((current) => {
+      const nextExpanded = current === jobId ? null : jobId
+      setItemPage(1)
+      return nextExpanded
+    })
   }
 
   const statusClass = (s) => {
@@ -555,12 +570,16 @@ function JobMonitor() {
                 {data.jobs.map((job, index) => {
                   const isExpanded = expandedJob === job.job_id
                   const items = Array.isArray(job.items) ? job.items : []
+                  const itemTotalPages = Math.max(1, Math.ceil(items.length / itemLimit))
+                  const safeItemPage = Math.min(itemPage, itemTotalPages)
+                  const itemStartIndex = (safeItemPage - 1) * itemLimit
+                  const pagedItems = items.slice(itemStartIndex, itemStartIndex + itemLimit)
 
                   return (
                     <Fragment key={job.job_id}>
                       <tr className={`jm-job-row ${isExpanded ? 'expanded' : ''}`} style={{ animationDelay: `${0.05 * index}s` }}>
                         <td>
-                          <button type="button" className="jm-expand-btn" onClick={() => setExpandedJob(isExpanded ? null : job.job_id)}>
+                          <button type="button" className="jm-expand-btn" onClick={() => toggleExpandedJob(job.job_id)}>
                             {isExpanded ? '▼' : '▶'}
                           </button>
                         </td>
@@ -589,48 +608,66 @@ function JobMonitor() {
                             <div className="jm-items-panel">
                               <div className="jm-items-header">
                                 <h4>Items for Job #{getJobNo(job) || '-'} <span className="jm-items-count">({items.length} items)</span></h4>
-                                <button type="button" className="jm-btn jm-btn-ghost" onClick={() => setExpandedJob(null)}>Close</button>
+                                <div className="jm-items-header-actions">
+                                  <label className="jm-items-limit">
+                                    <span>Show</span>
+                                    <select className="jm-filter-input jm-items-limit-select" value={itemLimit} onChange={handleItemLimitChange}>
+                                      {LIMIT_PRESETS.map((n) => (<option key={n} value={n}>{n}</option>))}
+                                    </select>
+                                  </label>
+                                  <button type="button" className="jm-btn jm-btn-ghost" onClick={() => setExpandedJob(null)}>Close</button>
+                                </div>
                               </div>
                               {items.length > 0 ? (
-                                <table className="jm-items-table">
-                                  <thead>
-                                    <tr>
-                                      <th>Item ID</th>
-                                      <th>Line #</th>
-                                      <th>Item Code</th>
-                                      <th>Quantity</th>
-                                      <th>Warehouse</th>
-                                      <th>Status</th>
-                                      <th>Transfer No</th>
-                                      <th>Record Key</th>
-                                      <th>Created At</th>
-                                      <th className="jm-th-actions">Actions</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {items.map((item) => (
-                                      <tr key={item.item_id}>
-                                        <td className="jm-td-id">{item.item_id}</td>
-                                        <td>{item.line_num}</td>
-                                        <td className="jm-td-mono">{item.item_code}</td>
-                                        <td>{item.quantity}</td>
-                                        <td>{item.warehouse_code}</td>
-                                        <td><span className={statusClass(job.status)}>{job.status}</span></td>
-                                        <td>{item.transfer_no}</td>
-                                        <td>{item.record_key}</td>
-                                        <td className="jm-td-nowrap">{formatDateTime(item.created_at)}</td>
-                                        <td className="jm-td-actions">
-                                          {job.status !== 'COMPLETED' && (
-                                            <button type="button" className="jm-action-btn" onClick={() => quickResend('item_code', item.item_code)} title="Resend by this item code">
-                                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
-                                              Resend
-                                            </button>
-                                          )}
-                                        </td>
+                                <>
+                                  <table className="jm-items-table">
+                                    <thead>
+                                      <tr>
+                                        <th>Item ID</th>
+                                        <th>Line #</th>
+                                        <th>Item Code</th>
+                                        <th>Quantity</th>
+                                        <th>Warehouse</th>
+                                        <th>Status</th>
+                                        <th>Transfer No</th>
+                                        <th>Record Key</th>
+                                        <th>Created At</th>
+                                        <th className="jm-th-actions">Actions</th>
                                       </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
+                                    </thead>
+                                    <tbody>
+                                      {pagedItems.map((item) => (
+                                        <tr key={item.item_id}>
+                                          <td className="jm-td-id">{item.item_id}</td>
+                                          <td>{item.line_num}</td>
+                                          <td className="jm-td-mono">{item.item_code}</td>
+                                          <td>{item.quantity}</td>
+                                          <td>{item.warehouse_code}</td>
+                                          <td><span className={statusClass(job.status)}>{job.status}</span></td>
+                                          <td>{item.transfer_no}</td>
+                                          <td>{item.record_key}</td>
+                                          <td className="jm-td-nowrap">{formatDateTime(item.created_at)}</td>
+                                          <td className="jm-td-actions">
+                                            {job.status !== 'COMPLETED' && (
+                                              <button type="button" className="jm-action-btn" onClick={() => quickResend('item_code', item.item_code)} title="Resend by this item code">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" /></svg>
+                                                Resend
+                                              </button>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                  <div className="jm-items-footer">
+                                    <span className="jm-page-info">Showing {pagedItems.length} of {items.length} items</span>
+                                    <div className="jm-pagination jm-items-pagination">
+                                      <button type="button" disabled={safeItemPage <= 1} onClick={() => setItemPage((page) => Math.max(1, page - 1))}>&laquo; Previous</button>
+                                      <span className="jm-page-info">Page {safeItemPage} of {itemTotalPages}</span>
+                                      <button type="button" disabled={safeItemPage >= itemTotalPages} onClick={() => setItemPage((page) => Math.min(itemTotalPages, page + 1))}>Next &raquo;</button>
+                                    </div>
+                                  </div>
+                                </>
                               ) : (
                                 <div className="jm-items-empty">No items found for this job.</div>
                               )}
