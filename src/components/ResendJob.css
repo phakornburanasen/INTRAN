@@ -363,3 +363,48 @@
     flex-direction: column;
   }
 }
+
+/* ===== TNLX form theme ===== */
+.rj-container { padding: 24px 28px 30px; }
+.rj-page-title { color: #17233a; font-size: 24px; letter-spacing: -0.2px; }
+.rj-page-desc { color: #71849b; }
+.rj-mode-card, .rj-form, .rj-result, .rj-api-info { border-color: #d7e3ef; border-radius: 14px; box-shadow: 0 4px 16px rgba(33, 61, 89, 0.04); }
+.rj-mode-card:hover { border-color: #8bcac8; box-shadow: 0 4px 14px rgba(19, 135, 134, 0.08); }
+.rj-mode-card.active { border-color: #138786; background: #eef9f8; box-shadow: 0 4px 14px rgba(19, 135, 134, 0.1); }
+.rj-mode-icon { background: #eef4f8; color: #60758b; }
+.rj-mode-card.active .rj-mode-icon { background: #d9f0ee; color: #138786; }
+.rj-mode-label { color: #253a55; }
+.rj-mode-desc, .rj-input-hint { color: #8192a5; }
+.rj-input-label { color: #526a84; letter-spacing: 0.35px; }
+.rj-input { border-color: #c9d9e9; border-radius: 9px; color: #17233a; }
+.rj-input:focus { border-color: #138786; box-shadow: 0 0 0 3px rgba(19, 135, 134, 0.13); }
+.rj-btn { border-radius: 9px; }
+.rj-btn-submit { background: #138786; }
+.rj-btn-submit:hover:not(:disabled) { background: #0f7475; }
+.rj-btn-submit:disabled { background: #9ac9c8; }
+.rj-api-method { background: #e2f3ed; color: #197658; }
+.rj-mode-card.active { border-color: #0f8582; background: #eaf6f5; }
+.rj-mode-card.active .rj-mode-icon { background: #d9eeee; color: #0f8582; }
+.rj-mode-card:hover { border-color: #9bd2b7; box-shadow: 0 4px 14px rgba(45, 156, 111, 0.08); }
+.rj-btn-submit { background: #e5f3f2; border: 1px solid #c6e5e4; color: #0f706e; }
+.rj-btn-submit:hover:not(:disabled) { background: #0f8582; border-color: #0f8582; color: #fff; }
+.rj-btn-submit:disabled { background: #d9eeee; border-color: #b9dddd; color: #639c9a; }
+.rj-input,
+.rj-form select,
+.rj-form textarea {
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.rj-input:focus,
+.rj-form select:focus,
+.rj-form textarea:focus {
+  outline: none;
+  background: #fff;
+  border-color: #78b995;
+  box-shadow: 0 0 0 2px rgba(15, 133, 130, 0.1);
+}
+
+@media (max-width: 768px) {
+  .rj-container { padding: 16px; }
+  .rj-page-title { font-size: 21px; }
+  .rj-form { padding: 18px; }
+}

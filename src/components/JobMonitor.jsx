@@ -23,6 +23,28 @@ const STATUS_NE_OPTIONS = [
 
 const LIMIT_PRESETS = [10, 50, 100]
 
+const valueMatchesSearch = (value, query) => {
+  if (value == null) return false
+  if (typeof value === 'object') {
+    return Object.values(value).some((nestedValue) => valueMatchesSearch(nestedValue, query))
+  }
+  return String(value).toLowerCase().includes(query)
+}
+
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+function HighlightText({ value, query }) {
+  const text = String(value ?? '')
+  if (!query || !text) return text
+
+  const parts = text.split(new RegExp(`(${escapeRegExp(query)})`, 'ig'))
+  return parts.map((part, index) => (
+    part.toLowerCase() === query.toLowerCase()
+      ? <mark className="jm-search-highlight" key={`${part}-${index}`}>{part}</mark>
+      : part
+  ))
+}
+
 function JobMonitor() {
   const [reloadKey, setReloadKey] = useState(0)
   const [filterMode, setFilterMode] = useState('day')
@@ -30,6 +52,8 @@ function JobMonitor() {
   const [selectedMonth, setSelectedMonth] = useState('')
   const [status, setStatus] = useState('')
   const [statusNe, setStatusNe] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [activeSearchTerm, setActiveSearchTerm] = useState('')
   const [limit, setLimit] = useState(10)
   const [offset, setOffset] = useState(0)
 
@@ -61,8 +85,8 @@ function JobMonitor() {
 
     if (status) params.set('status', status)
     if (statusNe) params.set('status_ne', statusNe)
-    params.set('limit', String(limit))
-    params.set('offset', String(offset))
+    params.set('limit', activeSearchTerm ? '10000' : String(limit))
+    params.set('offset', activeSearchTerm ? '0' : String(offset))
 
     try {
       const url = `${API_JOBS}?${params.toString()}`
@@ -76,7 +100,7 @@ function JobMonitor() {
     } finally {
       setLoading(false)
     }
-  }, [filterMode, selectedDate, selectedMonth, status, statusNe, limit, offset])
+  }, [filterMode, selectedDate, selectedMonth, status, statusNe, limit, offset, activeSearchTerm])
 
   useEffect(() => {
     fetchJobs()
@@ -84,6 +108,7 @@ function JobMonitor() {
 
   const handleSearch = (e) => {
     e.preventDefault()
+    setActiveSearchTerm(searchTerm.trim())
     setOffset(0)
     setExpandedJob(null)
     setReloadKey((key) => key + 1)
@@ -91,6 +116,11 @@ function JobMonitor() {
 
   const totalPages = data ? Math.ceil(data.total / data.limit) : 0
   const currentPage = data ? Math.floor(data.offset / data.limit) + 1 : 1
+  const normalizedSearchTerm = searchTerm.trim().toLowerCase()
+  const visibleJobs = data?.jobs?.filter((job) => {
+    if (!normalizedSearchTerm) return true
+    return valueMatchesSearch(job, normalizedSearchTerm)
+  }) ?? []
 
   const goToPage = (page) => {
     const newOffset = (page - 1) * data.limit
@@ -347,7 +377,7 @@ function JobMonitor() {
       `,
       icon: 'info',
       confirmButtonText: 'OK, Go to Resend Job',
-      confirmButtonColor: '#3b82f6',
+      confirmButtonColor: '#0f8582',
       customClass: {
         popup: 'jm-swal-popup',
         title: 'jm-swal-title',
@@ -421,7 +451,7 @@ function JobMonitor() {
                 <span className="jm-stat-label">Total Jobs</span>
               </div>
               <div className="jm-stat-card">
-                <span className="jm-stat-value">{data.jobs.length}</span>
+                <span className="jm-stat-value">{visibleJobs.length}</span>
                 <span className="jm-stat-label">Showing</span>
               </div>
             </>
@@ -431,6 +461,22 @@ function JobMonitor() {
 
       <form className="jm-filter-panel" onSubmit={handleSearch}>
         <div className="jm-filter-row">
+          <div className="jm-filter-group jm-search-group">
+            <label className="jm-filter-label" htmlFor="job-search">Search data</label>
+            <div className="jm-search-wrapper">
+              <svg className="jm-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7" /><line x1="20" y1="20" x2="16.1" y2="16.1" />
+              </svg>
+              <input id="job-search" type="text" className="jm-filter-input jm-search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search jobs or item code..." />
+              {searchTerm && (
+                <button type="button" className="jm-search-clear" onClick={() => { setSearchTerm(''); setActiveSearchTerm(''); setOffset(0); setReloadKey((key) => key + 1) }} aria-label="Clear search" title="Clear search">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
           <div className="jm-filter-group">
             <label className="jm-filter-label">Filter Mode</label>
             <div className="jm-toggle-group">
@@ -493,7 +539,14 @@ function JobMonitor() {
           </div>
 
           <div className="jm-filter-group jm-filter-group-btn">
-            <button type="submit" className="jm-btn jm-btn-primary" disabled={loading}>{loading ? 'Loading...' : 'Search'}</button>
+            <button type="submit" className="jm-btn jm-btn-primary" disabled={loading}>
+              {loading ? <span className="jm-spinner-small"></span> : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" /><line x1="20" y1="20" x2="16.1" y2="16.1" />
+                </svg>
+              )}
+              {loading ? 'Loading...' : 'Search'}
+            </button>
           </div>
         </div>
 
@@ -511,7 +564,12 @@ function JobMonitor() {
             <span className="jm-chip">Not: {statusNe}<button type="button" className="jm-chip-close" onClick={() => setStatusNe('')}>&times;</button></span>
           )}
           {(selectedDate || selectedMonth || status || statusNe) && (
-            <button type="button" className="jm-btn jm-btn-ghost" onClick={() => { setSelectedDate(''); setSelectedMonth(''); setStatus(''); setStatusNe(''); setOffset(0); setExpandedJob(null); setReloadKey((key) => key + 1) }}>Clear All</button>
+            <button type="button" className="jm-btn jm-btn-ghost" onClick={() => { setSelectedDate(''); setSelectedMonth(''); setStatus(''); setStatusNe(''); setOffset(0); setExpandedJob(null); setReloadKey((key) => key + 1) }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 12a9 9 0 1 0 3-6.7" /><polyline points="3 4 3 10 9 10" />
+              </svg>
+              Clear All
+            </button>
           )}
         </div>
       </form>
@@ -529,7 +587,7 @@ function JobMonitor() {
           {data.status_filter && <span>Status: <strong>{data.status_filter}</strong></span>}
           {data.status_not_filter && <span>Excluding: <strong>{data.status_not_filter}</strong></span>}
           {data.created_at_filter && <span>Created At: <strong>{formatDateThai(data.created_at_filter)}</strong></span>}
-          <span>Showing {data.jobs.length} of {data.total}</span>
+          <span>Showing {visibleJobs.length} of {data.total}</span>
         </div>
       )}
 
@@ -540,7 +598,7 @@ function JobMonitor() {
         </div>
       )}
 
-      {data && data.jobs.length > 0 && (
+      {data && visibleJobs.length > 0 && (
         <>
           <div className="jm-table-wrapper">
             {loading && (
@@ -567,7 +625,7 @@ function JobMonitor() {
                 </tr>
               </thead>
               <tbody>
-                {data.jobs.map((job, index) => {
+                {visibleJobs.map((job) => {
                   const isExpanded = expandedJob === job.job_id
                   const items = Array.isArray(job.items) ? job.items : []
                   const itemTotalPages = Math.max(1, Math.ceil(items.length / itemLimit))
@@ -583,16 +641,16 @@ function JobMonitor() {
                             {isExpanded ? '▼' : '▶'}
                           </button>
                         </td>
-                        <td className="jm-td-id">{getJobNo(job) || '-'}</td>
-                        <td className="jm-td-mono" title={job.request_id}>{job.request_id?.substring(0, 8)}...</td>
-                        <td>{job.integration_profile}</td>
-                        <td>{job.requested_by}</td>
-                        <td>{job.source_system}</td>
-                        <td><span className={statusClass(job.status)}>{job.status}</span></td>
-                        <td className="jm-td-nowrap">{formatDateTime(job.requested_at)}</td>
-                        <td className="jm-td-nowrap">{formatDateTime(job.created_at)}</td>
-                        <td className="jm-td-nowrap">{formatDateTime(job.updated_at)}</td>
-                        <td className="jm-td-error" title={job.error_message}>{job.error_message || '-'}</td>
+                        <td className="jm-td-id"><HighlightText value={getJobNo(job) || '-'} query={normalizedSearchTerm} /></td>
+                        <td className="jm-td-mono" title={job.request_id}><HighlightText value={job.request_id ? `${job.request_id.substring(0, 8)}...` : '-'} query={normalizedSearchTerm} /></td>
+                        <td><HighlightText value={job.integration_profile || '-'} query={normalizedSearchTerm} /></td>
+                        <td><HighlightText value={job.requested_by || '-'} query={normalizedSearchTerm} /></td>
+                        <td><HighlightText value={job.source_system || '-'} query={normalizedSearchTerm} /></td>
+                        <td><span className={statusClass(job.status)}><HighlightText value={job.status} query={normalizedSearchTerm} /></span></td>
+                        <td className="jm-td-nowrap"><HighlightText value={formatDateTime(job.requested_at)} query={normalizedSearchTerm} /></td>
+                        <td className="jm-td-nowrap"><HighlightText value={formatDateTime(job.created_at)} query={normalizedSearchTerm} /></td>
+                        <td className="jm-td-nowrap"><HighlightText value={formatDateTime(job.updated_at)} query={normalizedSearchTerm} /></td>
+                        <td className="jm-td-error" title={job.error_message}><HighlightText value={job.error_message || '-'} query={normalizedSearchTerm} /></td>
                         <td className="jm-td-actions">
                           {job.status !== 'COMPLETED' && (
                             <button type="button" className="jm-action-btn" onClick={() => quickResend('job', getJobNo(job))} title="Resend this job" disabled={!getJobNo(job)}>
@@ -615,7 +673,12 @@ function JobMonitor() {
                                       {LIMIT_PRESETS.map((n) => (<option key={n} value={n}>{n}</option>))}
                                     </select>
                                   </label>
-                                  <button type="button" className="jm-btn jm-btn-ghost" onClick={() => setExpandedJob(null)}>Close</button>
+                                  <button type="button" className="jm-btn jm-btn-ghost" onClick={() => setExpandedJob(null)}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                                    </svg>
+                                    Close
+                                  </button>
                                 </div>
                               </div>
                               {items.length > 0 ? (
@@ -638,15 +701,15 @@ function JobMonitor() {
                                     <tbody>
                                       {pagedItems.map((item) => (
                                         <tr key={item.item_id}>
-                                          <td className="jm-td-id">{item.item_id}</td>
-                                          <td>{item.line_num}</td>
-                                          <td className="jm-td-mono">{item.item_code}</td>
-                                          <td>{item.quantity}</td>
-                                          <td>{item.warehouse_code}</td>
-                                          <td><span className={statusClass(job.status)}>{job.status}</span></td>
-                                          <td>{item.transfer_no}</td>
-                                          <td>{item.record_key}</td>
-                                          <td className="jm-td-nowrap">{formatDateTime(item.created_at)}</td>
+                                          <td className="jm-td-id"><HighlightText value={item.item_id} query={normalizedSearchTerm} /></td>
+                                          <td><HighlightText value={item.line_num} query={normalizedSearchTerm} /></td>
+                                          <td className="jm-td-mono"><HighlightText value={item.item_code} query={normalizedSearchTerm} /></td>
+                                          <td><HighlightText value={item.quantity} query={normalizedSearchTerm} /></td>
+                                          <td><HighlightText value={item.warehouse_code} query={normalizedSearchTerm} /></td>
+                                          <td><span className={statusClass(job.status)}><HighlightText value={job.status} query={normalizedSearchTerm} /></span></td>
+                                          <td><HighlightText value={item.transfer_no} query={normalizedSearchTerm} /></td>
+                                          <td><HighlightText value={item.record_key} query={normalizedSearchTerm} /></td>
+                                          <td className="jm-td-nowrap"><HighlightText value={formatDateTime(item.created_at)} query={normalizedSearchTerm} /></td>
                                           <td className="jm-td-actions">
                                             {job.status !== 'COMPLETED' && (
                                               <button type="button" className="jm-action-btn" onClick={() => quickResend('item_code', item.item_code)} title="Resend by this item code">
@@ -662,9 +725,15 @@ function JobMonitor() {
                                   <div className="jm-items-footer">
                                     <span className="jm-page-info">Showing {pagedItems.length} of {items.length} items</span>
                                     <div className="jm-pagination jm-items-pagination">
-                                      <button type="button" disabled={safeItemPage <= 1} onClick={() => setItemPage((page) => Math.max(1, page - 1))}>&laquo; Previous</button>
+                                      <button type="button" disabled={safeItemPage <= 1} onClick={() => setItemPage((page) => Math.max(1, page - 1))}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+                                        Previous
+                                      </button>
                                       <span className="jm-page-info">Page {safeItemPage} of {itemTotalPages}</span>
-                                      <button type="button" disabled={safeItemPage >= itemTotalPages} onClick={() => setItemPage((page) => Math.min(itemTotalPages, page + 1))}>Next &raquo;</button>
+                                      <button type="button" disabled={safeItemPage >= itemTotalPages} onClick={() => setItemPage((page) => Math.min(itemTotalPages, page + 1))}>
+                                        Next
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+                                      </button>
                                     </div>
                                   </div>
                                 </>
@@ -683,17 +752,23 @@ function JobMonitor() {
           </div>
 
           <div className="jm-pagination">
-            <button type="button" disabled={currentPage <= 1} onClick={() => goToPage(currentPage - 1)}>&laquo; Previous</button>
+            <button type="button" disabled={currentPage <= 1} onClick={() => goToPage(currentPage - 1)}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+              Previous
+            </button>
             <span className="jm-page-info">Page {currentPage} of {totalPages}</span>
-            <button type="button" disabled={currentPage >= totalPages} onClick={() => goToPage(currentPage + 1)}>Next &raquo;</button>
+            <button type="button" disabled={currentPage >= totalPages} onClick={() => goToPage(currentPage + 1)}>
+              Next
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+            </button>
           </div>
         </>
       )}
 
-      {data && data.jobs.length === 0 && !loading && (
+      {data && visibleJobs.length === 0 && !loading && (
         <div className="jm-empty">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" /><polyline points="13 2 13 9 20 9" /></svg>
-          <p>No jobs found matching the current filters.</p>
+          <p>{searchTerm ? 'No jobs found matching the search.' : 'No jobs found matching the current filters.'}</p>
         </div>
       )}
 

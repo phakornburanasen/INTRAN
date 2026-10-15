@@ -40,11 +40,7 @@ function Navbar({ onToggleSidebar }) {
           </svg>
         </button>
         <div className="navbar-brand">
-          <svg className="navbar-logo" width="32" height="32" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="#3b82f6" />
-            <path d="M8 12L16 8L24 12V20L16 24L8 20V12Z" stroke="white" strokeWidth="1.5" fill="none" />
-            <circle cx="16" cy="16" r="3" fill="white" />
-          </svg>
+          <img className="navbar-logo" src="/INTRAN/tnlx.svg" alt="TNLX" />
           <div>
             <span className="navbar-title">DTW Service</span>
             <span className="navbar-subtitle">Job Monitor Dashboard</span>
@@ -70,8 +66,8 @@ function Navbar({ onToggleSidebar }) {
         </button>
 
         <div className="navbar-profile" onClick={() => setProfileOpen(!profileOpen)}>
-          <div className="navbar-avatar">A</div>
-          <span className="navbar-username">Admin</span>
+          <div className="navbar-avatar">D</div>
+          <span className="navbar-username">DTW Operator</span>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`navbar-chevron ${profileOpen ? 'rotate' : ''}`}>
             <polyline points="6 9 12 15 18 9" />
           </svg>

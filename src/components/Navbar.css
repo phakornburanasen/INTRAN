@@ -1,4 +1,4 @@
-/* ===== Navbar ===== */
+/* ===== TNLX Navbar ===== */
 .navbar {
   position: sticky;
   top: 0;
@@ -6,191 +6,86 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 60px;
-  padding: 0 20px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  min-height: 96px;
+  padding: 0 42px;
+  background: linear-gradient(110deg, #102d37 0%, #101827 58%, #0f1727 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 4px 18px rgba(7, 19, 34, 0.18);
+  color: #f8fafc;
 }
 
-.navbar-left {
+.navbar-left,
+.navbar-right,
+.navbar-brand,
+.navbar-profile {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 
-.navbar-hamburger {
+.navbar-left { gap: 24px; }
+.navbar-right { gap: 14px; }
+
+.navbar-hamburger,
+.navbar-icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border: none;
+  width: 42px;
+  height: 42px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   background: transparent;
-  color: #64748b;
-  border-radius: 8px;
+  color: #c6d4df;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 
-.navbar-hamburger:hover {
-  background: #f1f5f9;
-  color: #1e293b;
+.navbar-hamburger:hover,
+.navbar-icon-btn:hover,
+.navbar-profile:hover {
+  background: rgba(111, 211, 207, 0.12);
+  border-color: rgba(111, 211, 207, 0.18);
+  color: #9de4df;
 }
 
 .navbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  gap: 18px;
+  padding-left: 22px;
+  border-left: 1px solid rgba(193, 218, 225, 0.22);
 }
 
-.navbar-logo {
-  flex-shrink: 0;
-}
-
-.navbar-title {
-  display: block;
-  font-size: 15px;
-  font-weight: 700;
-  color: #1e293b;
-  line-height: 1.2;
-}
-
-.navbar-subtitle {
-  display: block;
-  font-size: 11px;
-  color: #94a3b8;
-  font-weight: 400;
-}
-
-.navbar-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.navbar-icon-btn {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.navbar-icon-btn:hover {
-  background: #f1f5f9;
-  color: #1e293b;
-}
-
-.navbar-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 18px;
-  height: 18px;
-  background: #ef4444;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid #fff;
-}
+.navbar-logo { display: block; width: 126px; height: auto; flex-shrink: 0; }
+.navbar-title { display: block; color: #f8fafc; font-size: 17px; font-weight: 700; line-height: 1.15; }
+.navbar-subtitle { display: block; margin-top: 3px; color: #9cc2d0; font-size: 12px; font-weight: 400; }
 
 .navbar-profile {
   position: relative;
-  display: flex;
-  align-items: center;
   gap: 8px;
-  padding: 4px 10px 4px 6px;
-  border-radius: 8px;
+  padding: 6px 12px 6px 7px;
+  border: 1px solid transparent;
+  border-radius: 9px;
   cursor: pointer;
-  transition: all 0.15s;
   user-select: none;
+  transition: background 0.18s ease, border-color 0.18s ease;
 }
 
-.navbar-profile:hover {
-  background: #f1f5f9;
-}
+.navbar-avatar { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #168887; color: #fff; font-size: 14px; font-weight: 700; }
+.navbar-username { color: #edf6f7; font-size: 14px; font-weight: 500; }
+.navbar-chevron { color: #9fb7c2; transition: transform 0.2s ease; }
+.navbar-chevron.rotate { transform: rotate(180deg); }
 
-.navbar-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.navbar-badge { position: absolute; top: 1px; right: 1px; display: flex; align-items: center; justify-content: center; min-width: 17px; height: 17px; padding: 0 4px; border: 2px solid #101827; border-radius: 999px; background: #ef6b6b; color: #fff; font-size: 9px; font-weight: 700; }
+.navbar-dropdown { position: absolute; top: calc(100% + 9px); right: 0; width: 200px; padding: 6px; border: 1px solid #d7e2ee; border-radius: 10px; background: #fff; box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18); z-index: 60; }
+.dropdown-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 7px; color: #334155; font-size: 13px; text-decoration: none; transition: background 0.15s ease, color 0.15s ease; }
+.dropdown-item:hover { background: #edf7f7; color: #0f7f80; }
+.dropdown-item-danger { color: #d34d59; }
+.dropdown-item-danger:hover { background: #fff1f2; color: #be3041; }
+.dropdown-divider { margin: 4px 0; border: 0; border-top: 1px solid #e5edf3; }
 
-.navbar-username {
-  font-size: 13px;
-  font-weight: 500;
-  color: #475569;
-}
-
-.navbar-chevron {
-  color: #94a3b8;
-  transition: transform 0.2s;
-}
-
-.navbar-chevron.rotate {
-  transform: rotate(180deg);
-}
-
-.navbar-dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 200px;
-  background: #fff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  padding: 6px;
-  z-index: 60;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  font-size: 13px;
-  color: #475569;
-  text-decoration: none;
-  border-radius: 6px;
-  transition: all 0.12s;
-}
-
-.dropdown-item:hover {
-  background: #f1f5f9;
-  color: #1e293b;
-}
-
-.dropdown-item-danger {
-  color: #ef4444;
-}
-
-.dropdown-item-danger:hover {
-  background: #fef2f2;
-  color: #dc2626;
-}
-
-.dropdown-divider {
-  border: none;
-  border-top: 1px solid #e2e8f0;
-  margin: 4px 0;
+@media (max-width: 720px) {
+  .navbar { min-height: 76px; padding: 0 16px; }
+  .navbar-brand { gap: 12px; padding-left: 14px; }
+  .navbar-subtitle, .navbar-username, .navbar-chevron { display: none; }
+  .navbar-title { font-size: 14px; }
+  .navbar-logo { width: 96px; }
 }
