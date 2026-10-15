@@ -467,7 +467,7 @@ function JobMonitor() {
               <svg className="jm-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="11" cy="11" r="7" /><line x1="20" y1="20" x2="16.1" y2="16.1" />
               </svg>
-              <input id="job-search" type="text" className="jm-filter-input jm-search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search jobs or item code..." />
+              <input id="job-search" type="text" className="jm-filter-input jm-search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search..." />
               {searchTerm && (
                 <button type="button" className="jm-search-clear" onClick={() => { setSearchTerm(''); setActiveSearchTerm(''); setOffset(0); setReloadKey((key) => key + 1) }} aria-label="Clear search" title="Clear search">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

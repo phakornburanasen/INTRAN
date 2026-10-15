@@ -1323,8 +1323,8 @@
 .jm-resend-form textarea:focus {
   outline: none;
   background: #fff;
-  border-color: #78b995;
-  box-shadow: 0 0 0 2px rgba(45, 156, 111, 0.1);
+  border-color: #0f8582;
+  box-shadow: 0 0 0 2px rgba(15, 133, 130, 0.1);
 }
 
 @media (max-width: 768px) {
